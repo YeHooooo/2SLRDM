@@ -1,0 +1,208 @@
+seed: 2026
+device: cuda
+
+data:
+  with_metal: data/with_metal
+  without_metal: data/without_metal
+  li_root: data/with_metal_li
+  li_strict: true
+  context_slices: 3
+  image_size: 512
+  coarse_size: 256
+  train_stride: 2
+  val_stride: 8
+  val_fraction: 0.2
+  num_workers: 4
+  hu_min: -1024.0
+  hu_max: 3071.0
+  metal_threshold: 2500.0
+  mask_dilate_kernel: 21
+  li_dilate_kernel: 9
+  li_blur_kernel: 5
+  streak_kernel: 31
+  streak_quantile: 0.975
+  min_body_hu: -850.0
+
+vae:
+  type: custom
+  checkpoint: checkpoints/vae_best.pt
+  in_channels: 3
+  latent_channels: 4
+  base_channels: 32
+  channel_mult: [1, 2, 4, 4]
+  kl_weight: 1.0e-6
+  latent_scale: 1.0
+
+train_vae:
+  checkpoint: checkpoints/vae512_best.pt
+  preview_dir: outputs/previews_vae512
+  preview_window: [-200.0, 500.0]
+  epochs: 50
+  batch_size: 6
+  grad_accum: 1
+  learning_rate: 2.0e-4
+  weight_decay: 1.0e-4
+  pixel_weight: 1.0
+  edge_weight: 0.25
+  amp: bf16
+  log_every: 25
+  memory_log_every_steps: 0
+  val_max_batches: 50
+
+li:
+  backend: astra_cuda
+  num_angles: 360
+  detector_spacing: 1.0
+  detector_count: 0
+  trace_threshold: 0.0
+  mu_water: 0.192
+  minimum_hu: -1000.0
+  isolate_astra_process: true
+  astra_worker_restart_interval: 128
+  release_torch_cache_before_astra: true
+  clear_astra_after_batch: false
+  astra_cleanup_interval: 0
+  trim_host_memory_after_astra: true
+  host_trim_interval: 256
+
+artifact_mask:
+  low_threshold_hu: 40.0
+  high_threshold_hu: 160.0
+  residual_softness_hu: 20.0
+  core_dilate_kernel: 11
+  confidence_blur_kernel: 9
+  support_dilate_kernel: 15
+  support_blur_kernel: 5
+  hysteresis_steps: 12
+  min_body_hu: -950.0
+  anatomy_edge_scale_hu: 180.0
+  direct_threshold_hu: 100.0
+  dark_threshold_hu: 70.0
+  dark_softness_hu: 15.0
+  dark_blur_kernel: 15
+  edge_confidence_floor: 0.40
+  severity_scale_hu: 300.0
+  near_metal_outer_kernel: 61
+  near_metal_ring_blur_kernel: 7
+  near_metal_local_kernel: 61
+  near_metal_dark_threshold_hu: 100.0
+  near_metal_dark_softness_hu: 20.0
+  near_metal_reference_min_hu: -600.0
+  near_metal_reference_softness_hu: 80.0
+  near_metal_reference_max_hu: 500.0
+  near_metal_max_confidence: 0.65
+
+near_metal:
+  condition_fill_dilate_kernel: 3
+  condition_fill_blur_kernel: 3
+  loss_dark_threshold_hu: 50.0
+  loss_dark_softness_hu: 15.0
+  loss_weight: 5.0
+
+artifact_transfer:
+  transfer_mask_gamma: 0.50
+  base_residual_hu: 1000.0
+  max_residual_hu: 1600.0
+  severity_gain: 0.60
+  dark_residual_gain: 1.20
+  min_scale: 0.6
+  max_scale: 1.2
+  li_delta_scale_hu: 200.0
+
+fusion:
+  base_correction_hu: 650.0
+  max_correction_hu: 1500.0
+  confidence_threshold: 0.03
+  confidence_gamma: 0.70
+  edge_protection_strength: 0.30
+  edge_scale_hu: 120.0
+  edge_dilate_kernel: 3
+  strong_artifact_threshold: 0.50
+  transition_blur_kernel: 5
+
+dark_rescue:
+  enabled: false
+  outer_kernel: 61
+  ring_blur_kernel: 7
+  residual_threshold_hu: 60.0
+  residual_softness_hu: 20.0
+  output_gap_threshold_hu: 60.0
+  confidence_threshold: 0.70
+  confidence_transition: 0.10
+  confidence_gamma: 0.50
+  output_dark_threshold_hu: -25.0
+  output_dark_softness_hu: 30.0
+  min_body_hu: -1025.0
+  li_target_min_hu: -200.0
+  li_target_softness_hu: 40.0
+  max_correction_hu: 1200.0
+  blend_gain: 1.0
+  mask_blur_kernel: 5
+  rescue_passes: 4
+
+metal_removal:
+  enabled: false
+  dilate_kernel: 7
+  blur_kernel: 7
+  transition_gain: 1.0
+
+diffusion:
+  coarse_checkpoint: checkpoints/ldm_streak_dark_v2_best.pt
+  timesteps: 1000
+  beta_schedule: cosine
+  base_channels: 64
+  time_dim: 256
+  sample_steps: 50
+  sample_eta: 0.0
+  start_timestep: 500
+  sampling_mask_threshold: 0.05
+  sampling_mask_dilate_kernel: 9
+  sampling_mask_blur_kernel: 5
+  sampling_support_threshold: 0.08
+
+refiner:
+  image_channels: 3
+  base_channels: 16
+  channel_mult: [1, 2, 4, 8]
+  gradient_checkpointing: true
+  coarse_train_timestep_max: 500
+  max_correction_hu: 450.0
+  gate_confidence_gamma: 0.50
+  gate_confidence_threshold: 0.015
+  edge_input_scale_hu: 120.0
+  edge_input_dilate_kernel: 3
+  confidence_loss_weight: 4.0
+  transfer_loss_weight: 5.0
+  residual_weight: 1.0
+  image_weight: 1.0
+  outside_preserve_weight: 2.0
+  directional_weight: 0.35
+  laplacian_weight: 0.20
+  projection_weight: 0.25
+  projection_every: 4
+  projection_size: 96
+  projection_angles: [0, 30, 60, 90, 120, 150]
+  preview_every_steps: 1000
+  preview_every_epochs: 1
+  preview_sample_steps: 25
+  preview_num_images: 1
+  preview_dir: outputs/previews_near_metal_dark_v1
+  preview_window: [-200.0, 500.0]
+
+train_joint:
+  checkpoint: checkpoints/near_metal_dark_v1_best.pt
+  ldm_initialization: random
+  refiner_warmup_epochs: 0
+  epochs: 100
+  batch_size: 1
+  ldm_learning_rate: 2.0e-5
+  refiner_learning_rate: 1.0e-4
+  weight_decay: 1.0e-4
+  diffusion_noise_weight: 1.0
+  diffusion_x0_weight: 0.25
+  ldm_support_weight: 2.0
+  grad_accum: 8
+  ema_decay: 0.9999
+  amp: bf16
+  log_every: 25
+  memory_log_every_steps: 50
