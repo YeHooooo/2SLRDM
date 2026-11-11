@@ -37,9 +37,9 @@ All exams and slices from each patient stayed in one subset. The manuscript repo
 
 ## 4. Training Environment
 
-Training and inference smoke tests used **Windows 11 25H2 (build 26200)**, **GeForce RTX 5080**, **Python 3.10.19**, **PyTorch 2.10.0.dev20251029+cu128**, **CUDA 12.8**, and **ASTRA Toolbox 2.4.1**. The tested environment also used NumPy 2.2.6, SciPy 1.13.1, scikit-image 0.25.2, and NiBabel 5.4.0.
+Training used a single NVIDIA GPU on Ubuntu 22.04.5 LTS with Python 3.8.20, PyTorch 2.2.2 built for CUDA 11.8, and cuDNN 8.7.0. The server environment included ASTRA Toolbox 2.1.3, NumPy 1.24.4, SciPy 1.10.1, scikit-image 0.21.0, NiBabel 5.2.1, and PyYAML 6.0.2.
 
-Install a CUDA-enabled PyTorch build for your GPU, then install the dependencies.
+To run this repository, install a CUDA-enabled PyTorch build for your GPU and use the dependency requirements below.
 
 ```bash
 python -m pip install -r requirements.txt
