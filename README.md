@@ -33,8 +33,6 @@ The study used aortic CTA acquired after coil embolization and available preoper
 - **Training and internal testing (Anzhen Main Campus):** 15 patients, 37 exams, and 30,636 slices for training. The other 4 patients, 11 exams, and 9,886 slices were held out for internal testing.
 - **External testing:** 15 patients, 30 exams, and 30,037 slices from Chaoyang Main (4 patients), Anzhen Tongzhou (6), and Chaoyang Changying (5).
 
-All exams and slices from each patient stayed in one subset. The manuscript reports no separate validation cohort. For training runs, the code uses a seeded patient-level validation split (`data.val_fraction: 0.2`). Provide only training cases to that split and keep test patients separate.
-
 ## 4. Training Environment
 
 Training used a single NVIDIA GPU on Ubuntu 22.04.5 LTS with Python 3.8.20, PyTorch 2.2.2 built for CUDA 11.8, and cuDNN 8.7.0. The server environment included ASTRA Toolbox 2.1.3, NumPy 1.24.4, SciPy 1.10.1, scikit-image 0.21.0, NiBabel 5.2.1, and PyYAML 6.0.2.
