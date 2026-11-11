@@ -49,36 +49,26 @@ python -m pip install -r requirements.txt
 
 Set `data.with_metal`, `data.without_metal`, and `data.li_root` in [configs/default.yaml](configs/default.yaml). Store axial HU slices as 2D NPY files in case folders. Each LI file mirrors its input's relative path.
 
-| Setting | Default joint training |
+| Setting | Joint training example |
 | :--- | :--- |
 | Input and Refiner size | 512 × 512, 3 adjacent slices |
-| LDM working image size | 256 × 256 |
+| LDM working image size | 512 × 512 |
 | Epochs, batch size, gradient accumulation | 100, 1, 8 |
 | Learning rate | LDM `2e-5`, Refiner `1e-4` |
 | Precision and seed | BF16, `2026` |
 
 ```bash
 python precompute_li.py --config configs/default.yaml
-
-python train_refiner.py --config configs/default.yaml \
-  --vae-checkpoint checkpoints/vae_best.pt \
-  --output checkpoints/near_metal_dark_v1_best.pt
-```
-
-The default run uses a compatible pretrained VAE. Resume with `--resume checkpoints/near_metal_dark_v1_last.pt`.
-
-### Train a 512 × 512 VAE
-
-```bash
 python train_vae.py --config configs/default.yaml --epochs 50 --batch-size 1
-
 python train_refiner.py --config configs/default.yaml --coarse-size 512 \
   --vae-checkpoint checkpoints/vae512_best.pt --output checkpoints/joint512_best.pt
 ```
 
+Resume joint training with `--resume checkpoints/joint512_last.pt`.
+
 ## 6. Inference
 
-Place a matching VAE and joint checkpoint at the paths below. Use `--coarse-size 512` for checkpoints trained with the 512 × 512 variant.
+Place a matching VAE and joint checkpoint at the paths below. For the 512 × 512 training example above, use `vae512_best.pt` and `joint512_best.pt` and add `--coarse-size 512`.
 
 ```bash
 # One NPY slice
