@@ -47,14 +47,6 @@ python -m pip install -r requirements.txt
 
 Set `data.with_metal`, `data.without_metal`, and `data.li_root` in [configs/default.yaml](configs/default.yaml). Store axial HU slices as 2D NPY files in case folders. Each LI file mirrors its input's relative path.
 
-| Setting | Joint training example |
-| :--- | :--- |
-| Input and Refiner size | 512 × 512, 3 adjacent slices |
-| LDM working image size | 512 × 512 |
-| Epochs, batch size, gradient accumulation | 100, 1, 8 |
-| Learning rate | LDM `2e-5`, Refiner `1e-4` |
-| Precision and seed | BF16, `2026` |
-
 ```bash
 python precompute_li.py --config configs/default.yaml
 python train_vae.py --config configs/default.yaml --epochs 50 --batch-size 1
